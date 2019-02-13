@@ -1,0 +1,32 @@
+ARG_TRIMMO_PE: 'ILLUMINACLIP:${{FA_ADAPTER_SE}}:6:30:10 LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:15'
+ARG_HISAT2: '--no-mixed --rna-strandness RF --dta --fr'
+
+GENOME: '"Bdistachyon_314_v3.1"'
+ARG_STRINGTIE: '--rf'
+
+ARG_TRIMMO_PE_TOPHAT: 'ILLUMINACLIP:${{FA_ADAPTER_SE}}:2:10:5:1'
+ARG_TOPHAT: '--no-mixed --max-multihits 1'
+ARG_CUFFLINKS: '--frag-bias-correct --multi-read-correct'
+
+ARG_BOWTIE2: '--no-mixed --no-discordant --no-unal -k2'
+ARG_MACS2: '--keep-dup 1 -p 0.1'
+MACS2_FILTER: 'FC>2.0'
+# CUTOFF_ENT: '{{CUTOFF_ENT}}'
+CUTOFF_ENT: '2.5'
+OPTIMAL_CONC: '~3.080'
+CUTOFF_PEAK2GENE: '6000bp'
+WINDOW_SIZE: '100'
+
+### 0130__callDiffTarg__Brachy-ELF3.py
+CUTOFF_CHIP: '1.5'
+CUTOFF_CHIPSD: '0.5'
+BIN_CHIP: 10
+CUTOFF_MAX: '3.0'
+CUTOFF_interpAUC: '1.0'
+GEO_RNA: '{{GEO_RNA}}'
+GEO_CHIP: '{{GEO_CHIP}}'
+
+####
+GENENO_ALL: '34310'
+GENENO_TPM: '20586'
+GENENO_CLUSTERED: '7301'

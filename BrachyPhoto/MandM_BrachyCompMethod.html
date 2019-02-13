@@ -1,0 +1,75 @@
+<h2 id="computational-analysis">Computational analysis:</h2>
+<p><u>RNA-Seq: Mapping and quantification</u></p>
+<p>Raw reads were mapped either with the Tophat pipeline or hisat2+stringtie pipeline due to logistic reasons, and is recorded in the supplementary TPM table. We used "Bdistachyon_314_v3.1" from Phytozome (!CITE!PHYTOZOME) as reference genome throughout the study.</p>
+<p><strong>Hisat2+Stringtie</strong> pipeline: Adapters were trimmed off from raw reads with Trimmomatic (!CITE! TRIMMOMATIC) with argument "ILLUMINACLIP:${{FA_ADAPTER_SE}}:6:30:10 LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:15". Raw reads were mapped to the transcriptome using HISAT2 (!CITE! HISAT2) with argument:"--no-mixed --rna-strandness RF --dta --fr" . Duplicate reads were removed with Picard (!CITE! PICARD) using default setting. Transcripts were quantified according to this alignment with StringTie (!CITE! STRINGTIE) in TPM values (Transcripts per Million mapped transcripts) with argument "--rf".</p>
+<p><strong>Tophat+Cufflinks</strong> pipeline: Adapters were trimmed off from raw reads with Trimmomatic (!CITE! TRIMMOMATIC) with argument "ILLUMINACLIP:${{FA_ADAPTER_SE}}:2:10:5:1". Raw reads were mapped to the transcriptome using TOPHAT (!CITE! TOPHAT) with argument:"--no-mixed --max-multihits 1". Duplicate reads were removed with Picard (!CITE! PICARD) using default setting. Transcripts were quantified according to this alignment with cufflinks (!CITE! CUFFLINKS) in TPM values (Transcripts per Million mapped transcripts) with argument "--frag-bias-correct --multi-read-correct".</p>
+<p>The TPM values were transformed into log abundances through</p>
+<p><br /><img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?A_%7Bgc%7D%3D%5Clog_2%28%5Ctext%7BTPM%7D_%7Bgc%7D%2B1%29%20%3D%20A%5Bc%5D" alt="A_{gc}=\log_2(\text{TPM}_{gc}+1) = A[c]" title="A_{gc}=\log_2(\text{TPM}_{gc}+1) = A[c]" /><br /></p>
+<p>(<img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?g" alt="g" title="g" /> indexes genes while <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?c" alt="c" title="c" /> indexes conditions).</p>
+<p>Any gene with a maximum log abundance smaller than 3.0 was discarded from downstream analysis to avoid introducing noisy variation. Detailed TPM table can be found in the supplementary. Out of 34310 reference genes, 20586 were kept.</p>
+<p><u>RNA-Seq: Clustering and target calling</u></p>
+<p>To investigate transcriptomic response towards a particular treatment, time-course perturbation matrices were constructed as the difference of log abundances between paired conditions. For example,</p>
+<p><br /><img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign%2A%7DD%26%5B%5Ctext%7BLD%2FSD%2CWT%2CWk2%2CZT0%7D%5D%20%5C%5C%0A%26%3D%20A%5B%5Ctext%7BLD%2CWT%2CWk2%2CZT0%7D%5D%20-%20A%5B%5Ctext%7BSD%2CWT%2CWk2%2CZT0%7D%5D%20%5C%5C%0A%26%3D%20%5Clog_2%28%20%5Cfrac%7B%20%5Ctext%7BTPM%7D%5B%5Ctext%7BLD%2CWT%2CWk2%2CZT0%7D%5D%20%2B%201%20%7D%0A%7B%20%5Ctext%7BTPM%7D%5B%5Ctext%7BSD%2CWT%2CWk2%2CZT0%7D%5D%20%2B%201%20%7D%29%0A%5Cend%7Balign%2A%7D%0A" alt="
+\begin{align*}D&amp;[\text{LD/SD,WT,Wk2,ZT0}] \\
+&amp;= A[\text{LD,WT,Wk2,ZT0}] - A[\text{SD,WT,Wk2,ZT0}] \\
+&amp;= \log_2( \frac{ \text{TPM}[\text{LD,WT,Wk2,ZT0}] + 1 }
+{ \text{TPM}[\text{SD,WT,Wk2,ZT0}] + 1 })
+\end{align*}
+" title="
+\begin{align*}D&amp;[\text{LD/SD,WT,Wk2,ZT0}] \\
+&amp;= A[\text{LD,WT,Wk2,ZT0}] - A[\text{SD,WT,Wk2,ZT0}] \\
+&amp;= \log_2( \frac{ \text{TPM}[\text{LD,WT,Wk2,ZT0}] + 1 }
+{ \text{TPM}[\text{SD,WT,Wk2,ZT0}] + 1 })
+\end{align*}
+" /><br /></p>
+<p>Clustering: The selected perturbation matrices were concatenated into a data matrix, against which a von Mises-Fisher mixture of increasing concentration is fitted (similar to !CITE!clusterVMF). Optimal concentration is manually selected to be ~3.080 according to the diagnostic plot and clusters with an average uncertainty higher than 2.5 were considered non-significant. Out of 20586 genes included, 7301 were assigned a significant cluster.</p>
+<p>The following perturbation matrices were selected:</p>
+<ul>
+<li>[LD/SD, WT, Wk2]</li>
+<li>[LD/SD, WT, Wk3]</li>
+<li>[SD, elf3-1/WT,Wk2]</li>
+<li>[SD, elf3-1/WT,Wk3]</li>
+<li>[LD, phyC-4/WT,Wk2]</li>
+<li>[LD, ppd1-1/WT,Wk3]</li>
+</ul>
+<p>Selection of genes responsive to <em>elf3-1</em> and <em>phyC-4</em>: A continous timecourse function was interpolated linearly from each of the perturbation matrices [SD, elf3-1/WT,Wk2] and [LD, phyC-4/WT,Wk2], which is then integrated over 24hr to give a temporal average, <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?T%5B%5Ctext%7BSD%2C%20elf3-1%2FWT%2CWk2%7D%5D" alt="T[\text{SD, elf3-1/WT,Wk2}]" title="T[\text{SD, elf3-1/WT,Wk2}]" /> and <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?T%5B%5Ctext%7BLD%2C%20phyC-4%2FWT%2CWk2%7D%5D" alt="T[\text{LD, phyC-4/WT,Wk2}]" title="T[\text{LD, phyC-4/WT,Wk2}]" />. Genes that satisfy <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?T%5B%5Ctext%7BSD%2C%20elf3-1%2FWT%2CWk2%7D%5D%20-%20T%5B%5Ctext%7BLD%2C%20phyC-4%2FWT%2CWk2%7D%5D%20%3E" alt="T[\text{SD, elf3-1/WT,Wk2}] - T[\text{LD, phyC-4/WT,Wk2}] &gt;" title="T[\text{SD, elf3-1/WT,Wk2}] - T[\text{LD, phyC-4/WT,Wk2}] &gt;" /> 1.0 were considered transcriptionally perturbed.</p>
+<p><u>ChIP-Seq: Mapping and quantification</u></p>
+<p>Adapters were trimmed off from raw reads with Trimmomatic (!CITE!TRIMMOMATIC) (!CITE!trimmomatic) with argument "ILLUMINACLIP:${{FA_ADAPTER_SE}}:6:30:10 LEADING:3 TRAILING:3 MINLEN:36 SLIDINGWINDOW:4:15". Raw reads were mapped to the genome "Bdistachyon_314_v3.1" with Bowtie2 (!CITE!BOWTIE2) under argument:"--no-mixed --no-discordant --no-unal -k2". Any read that mapped to more than one genomic location was discarded. Duplicate reads were removed with Picard using default setting (!CITE!PICARD).</p>
+<p>Genomic binding profile was quantified in RPKM (Reads Per Kilobase per Million mapped reads) using a bin-size of 10bp. For each bin, <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?%5Ctext%7BRPKM%7D_%7B%5Ctext%7Bbin%7D%7D%3D%5Cfrac%7B%5C%23%20%5Ctext%7BReads%20covering%20bin%7D%7D%20%7B%20%5Ctext%7Bbin-size%7D%20%7D%20%5Ccdot%20%5Cfrac%7B10%5E6%7D%7B%20%5C%23%5Ctext%7BMapped%20reads%7D%7D" alt="\text{RPKM}_{\text{bin}}=\frac{\# \text{Reads covering bin}} { \text{bin-size} } \cdot \frac{10^6}{ \#\text{Mapped reads}}" title="\text{RPKM}_{\text{bin}}=\frac{\# \text{Reads covering bin}} { \text{bin-size} } \cdot \frac{10^6}{ \#\text{Mapped reads}}" /></p>
+<p>For each treated ChIP-Seq library, peaks were called against a control using MACS2 (!CITE!MACS2) with argument "--keep-dup 1 -p 0.1". Peaks from all ChIP-Seqs were fitlered for FC&gt;2.0.</p>
+<p><u>ChIP-Seq: Defining regions differentially bound by ELF3</u></p>
+<p>Peaks from all ELF3 ChIP-Seqs were filtered and merged into contiguous regions.</p>
+<p>Abundances were computed for 100bp windows within each merged region, and log-transformed with <br /><img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?A_%7Bwc%7D%20%3D%20A_%7Bw%7D%5Bc%5D%20%3D%5Clog_2%20%5Cleft%28%201%20%2B%20%7B%20%5Csum_%7Bi%20%5Cin%20w%7D%20%20%5Ctext%7BRPKM%7D_i%5Bc%5D%20%7D%5Cright%29" alt="A_{wc} = A_{w}[c] =\log_2 \left( 1 + { \sum_{i \in w}  \text{RPKM}_i[c] }\right)" title="A_{wc} = A_{w}[c] =\log_2 \left( 1 + { \sum_{i \in w}  \text{RPKM}_i[c] }\right)" /><br /></p>
+<p>(<img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?w" alt="w" title="w" /> denotes the window, <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?i" alt="i" title="i" /> denotes the 10bp bin, <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?c" alt="c" title="c" /> indexes condition)</p>
+<p>Differential occupancy was quantified for each window by taking its dot-product with a signature vector to get <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?s_w%20%3D%20%5Csum_%7Bc%7D%20%5Cphi_c%20A_%7Bwc%7D" alt="s_w = \sum_{c} \phi_c A_{wc}" title="s_w = \sum_{c} \phi_c A_{wc}" />, where the signature vector <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?%5Cphi_%7Bc%7D" alt="\phi_{c}" title="\phi_{c}" /> is computed from a set of marker windows <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?W" alt="W" title="W" /> so that</p>
+<p><br /><img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign%2A%7D%0A%5Cleft%5C%7B%20%0A%5Cbegin%7Baligned%7D%20%0A%5Cphi_c%20%0A%3D%20%5Ctext%7BmeanNorm%7D_c%20%5Cleft%28%20%5Cfrac%7B%20%5Csum_%7Bw%5Cin%20W%7D%20A_%7Bwc%7D%20%7D%7B%20%5Csum_%7Bw%20%5Cin%20W%7D%201%20%7D%20%5Cright%29%5C%5C%0A%20%5Ctext%7BmeanNorm%7D_c%28x_c%29%20%0A%3D%20x_c%20-%20%5Cfrac%7B%20%5Csum_c%20x_c%20%20%7D%7B%20%5Csum_c%201%20%7D%0A%5Cend%7Baligned%7D%0A%5Cright.%0A%5Cend%7Balign%2A%7D%0A" alt="
+\begin{align*}
+\left\{ 
+\begin{aligned} 
+\phi_c 
+= \text{meanNorm}_c \left( \frac{ \sum_{w\in W} A_{wc} }{ \sum_{w \in W} 1 } \right)\\
+ \text{meanNorm}_c(x_c) 
+= x_c - \frac{ \sum_c x_c  }{ \sum_c 1 }
+\end{aligned}
+\right.
+\end{align*}
+" title="
+\begin{align*}
+\left\{ 
+\begin{aligned} 
+\phi_c 
+= \text{meanNorm}_c \left( \frac{ \sum_{w\in W} A_{wc} }{ \sum_{w \in W} 1 } \right)\\
+ \text{meanNorm}_c(x_c) 
+= x_c - \frac{ \sum_c x_c  }{ \sum_c 1 }
+\end{aligned}
+\right.
+\end{align*}
+" /><br /></p>
+<p>Cross-condition variance is also defined for each window <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?t_w%20%3D%20%5Ctext%7BStd%7D_c%20%5BA_%7Bwc%7D%5D" alt="t_w = \text{Std}_c [A_{wc}]" title="t_w = \text{Std}_c [A_{wc}]" />. Any window with <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?s_g" alt="s_g" title="s_g" /> &gt; 1.5 and <img style="vertical-align:middle" src="https://latex.codecogs.com/png.latex?t_g" alt="t_g" title="t_g" /> &gt; 0.5 is called differentially bound.</p>
+<p>Any peak with a differentially bound window is considered a differentially-bound peak. Any gene with a differential bound window within +/- 6000bp of its start codon is considered a differentially bound gene. Pile-up of ELF3 occupancy: was performed on the set of peaks that contains at least 1 differentially bound window.</p>
+<p>Binding profiles near marker genes were visualised with <em>fluff</em> (!CITE!FLUFF), and visualised with Integrated Genomic Browser during investigation (!CITE!IGV).</p>
+<p><u>Availability</u></p>
+<p>Code is available from this Github repo: https://github.com/shouldsee/BrachyPhoto.</p>
+<p>RNA-Seq data are available from: {{GEO_RNA}}</p>
+<p>ChIP-Seq data are available from: {{GEO_CHIP}}</p>
+<p>GNU-parallel (!CITE!GNUPARA) was used in paralleling the computational analysis.</p>
